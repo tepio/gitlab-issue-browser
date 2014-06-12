@@ -1,0 +1,24 @@
+{
+  "name": "baydoor-gitlab",
+  "version": "0.0.0",
+  "authors": [
+    "Ryan Schumacher <ryan@38pages.com>"
+  ],
+  "license": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.1.1",
+    "angular": "~1.2.17",
+    "restangular": "~1.4.0",
+    "ngstorage": "~0.3.0",
+    "angular-strap": "~2.0.3",
+    "angular-motion": "~0.3.2",
+    "angular-sanitize": "~1.2.17"
+  }
+}
