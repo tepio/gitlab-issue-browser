@@ -174,9 +174,9 @@ angular.module('app')
     };
 
     $scope.issueProgress = function(issue) {
-      var progress = _.find(issue.tags, function(tag) { return tag.match(/^progress-/); });
+      var progress = _.find(issue.labels, function(label) { return label.match(/^progress-/); });
 
-      return progress ? progress.replace(/^progress-/) : false;
+      return progress ? progress.replace(/^(progress-)/, '') : false;
     }
 
     $scope.labelColor = function(label) {
