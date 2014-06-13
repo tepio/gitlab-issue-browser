@@ -8,12 +8,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 //Request::setTrustedProxies(array('127.0.0.1'));
 
-$app->get('/', function () use ($app) {
-    return $app['twig']->render('index.html', array());
-})
-->bind('homepage')
-;
-
 $app->error(function (\Exception $e, $code) use ($app) {
     if ($app['debug']) {
         return;
@@ -30,6 +24,22 @@ $app->error(function (\Exception $e, $code) use ($app) {
     return new Response($app['twig']->resolveTemplate($templates)->render(array('code' => $code)), $code);
 });
 
+///////
+
+$app->before(function(Request $req) use($app) {
+    if(strpos($req->attributes->get('_route'), '_api_projects_id')) {
+        if(!in_array($req->attributes->get('id'), $app['gitlab.projects.include'])) {
+            return $app->json(false, 404);
+        }
+    }
+});
+
+///////
+
+$app->get('/', function () use ($app) {
+    return $app['twig']->render('index.html', array());
+});
+
 ////////
 
 $filterProject = function($project) {
@@ -39,7 +49,7 @@ $filterProject = function($project) {
 };
 
 $filterIssue = function($issue) {
-    $filter = array('id' => 1, 'project_id' => 1
+    $filter = array('id' => 1, 'iid' => 1, 'project_id' => 1
                 , 'title' => 1, 'name' => 1, 'description' => 1
                 , 'created_at' => 1, 'updated_at' => 1, 'labels' => 1
                 , 'milestone' => 1, 'state' => 1);
@@ -59,7 +69,7 @@ $app->get('/', function(Request $req) use($app) {
 $app->get('/api/projects', function(Request $req) use($app, $filterProject) {
 
     $projects = array();
-    foreach($app['gitlab.projects'] as $id) {
+    foreach($app['gitlab.projects.include'] as $id) {
         $project = $app['gitlab']->api('projects')->show($id);
 
         $projects[] = $filterProject($project);
@@ -71,10 +81,6 @@ $app->get('/api/projects', function(Request $req) use($app, $filterProject) {
 
 $app->get('/api/projects/{id}', function(Request $req, $id) use($app, $filterProject) {
 
-    if(!in_array($id, $app['gitlab.projects'])) {
-        return $app->json(array(), 404);
-    }
-
     $project = $groups = $app['gitlab']->api('projects')->show($id);
 
     $project = $filterProject($project);
@@ -85,10 +91,6 @@ $app->get('/api/projects/{id}', function(Request $req, $id) use($app, $filterPro
 
 $app->get('/api/projects/{id}/milestones', function(Request $req, $id) use($app, $filterProject) {
 
-    if(!in_array($id, $app['gitlab.projects'])) {
-        return $app->json(array(), 404);
-    }
-
     $milestones = $app['gitlab']->api('milestones')->all($id);
 
     return $app->json($milestones);
@@ -96,10 +98,6 @@ $app->get('/api/projects/{id}/milestones', function(Request $req, $id) use($app,
 });
 
 $app->get('/api/projects/{id}/issues', function(Request $req, $id) use($app, $filterIssue) {
-
-    if(!in_array($id, $app['gitlab.projects'])) {
-        return $app->json(array(), 404);
-    }
 
     $issues = $app['gitlab']->api('issues')->all($id);
 
